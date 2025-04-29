@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: multiplayer-sudoku-server
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: |
+      corepack enable
+      yarn install
+    startCommand: node index.js
+    envVars:
+      - key: NODE_VERSION
+        value: 20.10.0
+      - key: PORT
+        value: 10000
