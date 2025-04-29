@@ -21,7 +21,10 @@ const puzzles = {
 }
 
 const app = express()
-app.use(cors())
+app.use(cors({
+  origin: 'multiplayer-sudoku-client.vercel.app',  // ← use your actual deployed frontend URL
+  methods: ['GET', 'POST'],
+}))
 
 // ← NEW ENDPOINT
 app.get('/api/puzzle/:difficulty', (req, res) => {
