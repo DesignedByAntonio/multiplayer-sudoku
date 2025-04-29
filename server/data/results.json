@@ -1,0 +1,46 @@
+{
+  "results": [
+    {
+      "roomId": "2",
+      "userName": "a",
+      "time": 2,
+      "mistakes": 0,
+      "date": "2025-04-28T23:34:09.897Z"
+    },
+    {
+      "roomId": "1",
+      "userName": "2",
+      "time": 2,
+      "mistakes": 0,
+      "date": "2025-04-28T23:34:46.268Z"
+    },
+    {
+      "roomId": "1",
+      "userName": "Tony",
+      "time": 13,
+      "mistakes": 0,
+      "date": "2025-04-28T23:35:20.082Z"
+    },
+    {
+      "roomId": "bbb",
+      "userName": "2",
+      "time": 5,
+      "mistakes": 0,
+      "date": "2025-04-29T00:17:00.590Z"
+    },
+    {
+      "roomId": "123",
+      "userName": "Kaylin",
+      "time": 16,
+      "mistakes": 0,
+      "date": "2025-04-29T05:12:25.350Z"
+    },
+    {
+      "roomId": "abcd",
+      "userName": "Andres",
+      "time": 7,
+      "mistakes": 0,
+      "date": "2025-04-29T05:42:34.829Z"
+    }
+  ]
+}
