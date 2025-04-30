@@ -22,7 +22,8 @@ const puzzles = {
 
 const app = express()
 app.use(cors({
-  origin: 'multiplayer-sudoku-client.vercel.app',  // ← use your actual deployed frontend URL
+  origin: ['https://multiplayer-sudoku-client.vercel.app',  
+  /\.vercel\.app$/],
   methods: ['GET', 'POST'],
 }))
 
