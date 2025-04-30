@@ -16,7 +16,7 @@ export default function App() {
     if (!userName || !roomId) return
   
     // 1. Fetch a puzzle (hardcode 'easy' for now)
-    const resp = await fetch(`http://localhost:4000/api/puzzle/easy`)
+    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`)
     const { grid } = await resp.json()
   
     // 2. Convert the 81-char string into a 9×9 array of '' or '1'–'9'
@@ -34,7 +34,7 @@ export default function App() {
   async function loadLeaderboard() {
     try {
       const res = await fetch(
-        `http://localhost:4000/api/leaderboard?roomId=${roomId}&limit=10`
+        `${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`
       )
       const data = await res.json()
       setScores(data)

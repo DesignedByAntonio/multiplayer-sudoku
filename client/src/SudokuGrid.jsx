@@ -54,7 +54,14 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
      const [startTime, setStartTime] = useState(null)
      const [selectedCell, setSelectedCell] = useState(null)
 
-
+     useEffect(() => {
+        socket.on('connect', () => {
+          console.log('[SOCKET] connected to server:', socket.id)
+        })
+      
+        return () => socket.off('connect')
+      }, [])
+      
       // ───────────────────────────────────────────────────────────────────
  // Play a win sound when someone wins
     useEffect(() => {
@@ -88,7 +95,7 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
       const elapsedSec = Math.floor(elapsedMs / 1000)
 
       // send to leaderboard API
-      fetch('http://localhost:4000/api/result', {
+      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -108,6 +115,7 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
     // 2. Join the room on mount
     useEffect(() => {
         socket.connect()
+        console.log('[SOCKET] connected:', socket.connected)
         socket.emit('join-room', roomId, userName)
 
     // 3. Listen for remote updates
