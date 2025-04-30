@@ -3,12 +3,19 @@ import SudokuGrid from './SudokuGrid'
 
 export default function App() {
   // For now, hard-code a room and prompt for a name
-  const [userName, setUserName] = useState('')
-  const [roomId, setRoomId] = useState('')
+  const [userName, setUserName] = useState(null)
+  
+  const urlParams = new URLSearchParams(window.location.search)
+  const defaultRoom = urlParams.get('room') || ''
+  const [roomId, setRoomId] = useState(defaultRoom)
+  
+
+
   const [joined, setJoined] = useState(false)
   const [initialGrid, setInitialGrid] = useState(null)
   const [showLb, setShowLb]   = useState(false)
   const [scores, setScores]   = useState([])
+
 
 
   // When the user clicks “Join”, we’ll render the grid
@@ -74,8 +81,16 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-start bg-gray-100 p-4 space-y-4">
       <h2 className="text-xl font-semibold">
-        Room: {roomId} — Player: {userName}
+        Current room is: {roomId} — You are: {userName}
       </h2>
+      <p className="text-sm text-gray-500">
+        Share to invite someone:
+        <br />
+        <span className="font-mono bg-gray-100 px-2 py-1 rounded">
+          {window.location.origin}?room={roomId}
+        </span>
+      </p>
+
 
       <button
         onClick={loadLeaderboard}
