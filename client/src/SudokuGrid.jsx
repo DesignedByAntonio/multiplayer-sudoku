@@ -42,17 +42,23 @@ function isComplete(grid) {
   }
   
 
-export default function SudokuGrid({ roomId, userName, initialGrid }) {
+export default function SudokuGrid({ roomId, userName }) {
      // 1. Initialize a 9×9 grid of zeros (empty)
      const emptyGrid = Array.from({ length: 9 }, () => Array(9).fill(''))
-     const [grid, setGrid] = useState(
-      initialGrid || emptyGrid
-     )
+     const [serverGrid, setServerGrid] = useState(null)
+    //  const [grid, setGrid] = useState(
+    //     serverGrid || emptyGrid
+    //  )
+    const [grid, setGrid] = useState(emptyGrid)
 
      const [winner, setWinner] = useState(null)
      // Timer state: record when the game actually starts
      const [startTime, setStartTime] = useState(null)
      const [selectedCell, setSelectedCell] = useState(null)
+
+     
+     const [players, setPlayers] = useState({})
+
 
      useEffect(() => {
         socket.on('connect', () => {
@@ -76,12 +82,12 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
 
     // Guarded effect:
     useEffect(() => {
-        // Don’t run this until initialGrid is truthy (i.e. not null)
-        if (initialGrid) {
-          setGrid(initialGrid)
+        // Don’t run this until serverGrid is truthy (i.e. not null)
+        if (serverGrid) {
+          setGrid(serverGrid)
           setStartTime(Date.now())
         }
-      }, [initialGrid])
+      }, [serverGrid])
 
 
 
@@ -116,8 +122,8 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
     useEffect(() => {
         socket.connect()
         console.log('[SOCKET] connected:', socket.connected)
-        socket.emit('join-room', roomId, userName)
-
+        socket.emit('join-room', { roomId, userName })
+        
     // 3. Listen for remote updates
     socket.on('cell-update', ({ row, col, value }) => {
       setGrid(g => {
@@ -134,6 +140,17 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
     }
   }, [roomId, userName])
 
+  useEffect(() => {
+    socket.on('room-data', ({ puzzle, players }) => {
+        setServerGrid(puzzle) // for sudoku board
+        setPlayers(players)     // for leaderboard, etc.
+    })
+    
+    return () => {
+        socket.off('room-data')
+    }
+    }, [])
+
     // subscribe once on mount
     useEffect(() => {
         socket.on('game-won', ({ userName: winnerName }) => {
@@ -147,7 +164,7 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
 
   // 4. Handle local edits
   function onChange(r, c, e) {
-    if (initialGrid && initialGrid[r][c] !== '') return;  // ignore attempts on clues
+    if (serverGrid && serverGrid[r][c] !== '') return;  // ignore attempts on clues
     const val = e.target.value.slice(-1).replace(/[^1-9]/g, '') // 1–9 only
     setGrid(g => {
       const next = g.map(r => [...r])
@@ -190,7 +207,7 @@ export default function SudokuGrid({ roomId, userName, initialGrid }) {
         {grid.map((row, r) =>
             row.map((val, c) => {
             // compute isClue inside a block arrow function
-            const isClue = initialGrid && initialGrid[r][c] !== ''
+            const isClue = serverGrid && serverGrid[r][c] !== ''
             const disabled = isClue || Boolean(winner)
 
             const borderTop = r === 0
