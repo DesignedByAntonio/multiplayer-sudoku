@@ -124,12 +124,12 @@ export default function SudokuGrid({ roomId, userName }) {
         console.log('[SOCKET] connected:', socket.connected)
         socket.emit('join-room', { roomId, userName })
         
-    // 3. Listen for remote updates
-    socket.on('cell-update', ({ row, col, value }) => {
-      setGrid(g => {
-        const next = g.map(r => [...r])
-        next[row][col] = value
-        return next
+        // 3. Listen for remote updates
+        socket.on('cell-update', ({ row, col, value }) => {
+            setGrid(g => {
+            const next = g.map(r => [...r])
+            next[row][col] = value
+            return next
       })
     })
 
@@ -142,9 +142,14 @@ export default function SudokuGrid({ roomId, userName }) {
 
   useEffect(() => {
     socket.on('room-data', ({ puzzle, players }) => {
-        setServerGrid(puzzle) // for sudoku board
-        setPlayers(players)     // for leaderboard, etc.
-    })
+        const flat = puzzle.split('').map(c => (c === '0' ? '' : c))
+        const twoD = Array.from({ length: 9 }, (_, r) =>
+          flat.slice(r * 9, r * 9 + 9)
+        )
+        setServerGrid(twoD)
+        setPlayers(players)
+      })
+      
     
     return () => {
         socket.off('room-data')
