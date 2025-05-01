@@ -13,6 +13,11 @@ import { fileURLToPath } from 'url'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
+
+// { [roomId]: { puzzle: [...], players: {} } }
+const roomData = {}  
+
+
 // ← LOAD PUZZLES
 const puzzles = {
   easy: JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'easy.json'), 'utf8')),
@@ -73,15 +78,50 @@ const io = new Server(server, {
 io.on('connection', socket => {
   console.log('⚡️ New client connected:', socket.id)
 
-  socket.on('join-room', (roomId, userName) => {
+  socket.on('join-room', ({ roomId, userName }) => {
     socket.join(roomId)
+    console.log(`${userName} joined room ${roomId}`)
+
+     // Initialize room if it doesn't exist
+     if (!roomData[roomId]) {
+      const list = puzzles['easy']
+      const puzzle = list[Math.floor(Math.random() * list.length)].grid
+
+      roomData[roomId] = {
+        puzzle,
+        players: {}
+      }
+    }
+
+    // Register player in room
+    roomData[roomId].players[userName] = {
+      start: Date.now(),
+      end: null,
+      forfeit: false
+    }
+
+    // Send puzzle + players to new player
+    socket.emit('room-data', {
+      puzzle: roomData[roomId].puzzle,
+      players: roomData[roomId].players
+    })
+
+    // Notify others in room
+    socket.to(roomId).emit('player-joined', userName)
+
+
+
     io.to(roomId).emit('user-joined', userName)
   })
 
-  socket.on('cell-update', data => {
-    // data: { roomId, row, col, value }
-    socket.to(data.roomId).emit('cell-update', data)
+  // socket.on('cell-update', data => {
+  //   // data: { roomId, row, col, value }
+  //   socket.to(data.roomId).emit('cell-update', data)
+  // })
+  socket.on('cell-update', ({ roomId, row, col, value }) => {
+    socket.to(roomId).emit('cell-update', { row, col, value })
   })
+  
   // when the client sends “ping”
   socket.on('ping', (msg) => {
     console.log('🔔 Ping received:', msg);
@@ -92,8 +132,6 @@ io.on('connection', socket => {
 socket.on('game-won', ({ roomId, userName }) => {
   io.to(roomId).emit('game-won', { userName })
 })
-
-
 
   socket.on('disconnect', () => {
     console.log('🛑 Client disconnected:', socket.id)
