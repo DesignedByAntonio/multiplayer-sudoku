@@ -44,17 +44,27 @@ function isComplete(grid) {
     return true;
   }
 
-  function handleNumberPadClick(num) {
+  function handleNumberClick(num) {
     if (!selectedCell) return;
     const { row, col } = selectedCell;
+  
+    // Prevent changing a clue cell
     if (serverGrid && serverGrid[row][col] !== '') return;
+  
+    const val = num === '⌫' ? '' : num;
   
     setGrid(g => {
       const next = g.map(r => [...r]);
-      next[row][col] = num;
+      next[row][col] = val;
       return next;
     });
-    socket.emit('cell-update', { roomId, row, col, value: num });
+  
+    socket.emit('cell-update', {
+      roomId,
+      row,
+      col,
+      value: val
+    });
   }
   
 
