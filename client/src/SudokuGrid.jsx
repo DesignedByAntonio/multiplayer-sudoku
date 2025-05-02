@@ -357,7 +357,7 @@ export default function SudokuGrid({ roomId, userName }) {
                     value={val}
                     onClick={() => setSelectedCell({ row: r, col: c })}
                     onFocus={() => setSelectedCell({ row: r, col: c })}
-                    onBlur={() => setSelectedCell(null)}
+                    // onBlur={() => setSelectedCell(null)}
                     readOnly={isClue}
                     disabled={disabled}
                     className={`
