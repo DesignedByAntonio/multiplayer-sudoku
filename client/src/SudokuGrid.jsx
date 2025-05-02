@@ -210,7 +210,9 @@ export default function SudokuGrid({ roomId, userName }) {
   }
 
   function handleNumberClick(num) {
+    console.log('Selected Cell:', selectedCell)
     if (!selectedCell) return;
+    
     const { row, col } = selectedCell;
   
     // Prevent changing a clue cell
@@ -230,6 +232,8 @@ export default function SudokuGrid({ roomId, userName }) {
       col,
       value: val
     });
+    console.log('Click registered:', num, 'Cell:', selectedCell)
+
   }
 
 
@@ -348,10 +352,10 @@ export default function SudokuGrid({ roomId, userName }) {
 
                 <input
                     key={`${r}-${c}`}
-                    type="text"
+                    type="button"
                     maxLength="1"
                     value={val}
-                    onChange={e => onChange(r, c, e)}
+                    onClick={() => setSelectedCell({ row: r, col: c })}
                     onFocus={() => setSelectedCell({ row: r, col: c })}
                     onBlur={() => setSelectedCell(null)}
                     readOnly={isClue}
