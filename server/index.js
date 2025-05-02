@@ -118,7 +118,13 @@ io.on('connection', socket => {
     const player = roomData?.[roomId]?.players?.[userName]
     if (!player) return
   
-    player.end = time !== null ? time : null
+    if (time === null) {
+      player.end = null
+      player.forfeit = true  // 👈 this line was missing
+    } else {
+      player.end = time
+    }
+    
 
   
     // Notify others that this player finished
