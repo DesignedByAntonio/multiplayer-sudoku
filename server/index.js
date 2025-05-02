@@ -118,7 +118,8 @@ io.on('connection', socket => {
     const player = roomData?.[roomId]?.players?.[userName]
     if (!player) return
   
-    player.end = time
+    player.end = time !== null ? time : null
+
   
     // Notify others that this player finished
     socket.to(roomId).emit('player-finished', { userName, time })
@@ -129,7 +130,7 @@ io.on('connection', socket => {
     if (done) {
       const results = Object.entries(players).map(([name, p]) => ({
         userName: name,
-        time: p.forfeit ? 'forfeit' : p.end - p.start
+        time: p.end === null || p.forfeit ? null : p.end - p.start
       }))
       io.to(roomId).emit('all-players-finished', results)
     }
