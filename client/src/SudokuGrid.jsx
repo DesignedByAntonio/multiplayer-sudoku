@@ -187,7 +187,7 @@ export default function SudokuGrid({ roomId, userName }) {
     return <div className="text-center mt-10 text-red-600">Loading puzzle...</div>
   }
   
-  console.log('typeof grid:', typeof grid, grid)
+  
   return (
     
     <>
@@ -239,7 +239,7 @@ export default function SudokuGrid({ roomId, userName }) {
                 : 'border-l border-gray-300'
 
             const borderRight = c === 8
-            ? 'border-r-4 border-gray-700'
+            ? 'border-r-4 border-red-700'
             : c % 3 === 2
                 ? 'border-r-2 border-gray-700'
                 : 'border-r border-gray-300'
