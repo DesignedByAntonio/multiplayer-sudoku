@@ -111,17 +111,6 @@ export default function SudokuGrid({ roomId, userName }) {
           userName,
           time: endTime
         })
-
-
-    useEffect(() => {
-        socket.on('all-players-finished', (results) => {
-            setFinalResults(results)
-        })
-        return () => socket.off('all-players-finished')
-        }, [])
-        
-    
-
       // compute elapsed time in seconds
       const elapsedMs = startTime ? Date.now() - startTime : 0
       const elapsedSec = Math.floor(elapsedMs / 1000)
@@ -140,8 +129,18 @@ export default function SudokuGrid({ roomId, userName }) {
       })
     }
   }, [grid])
+
+
+
+
           
-          
+  useEffect(() => {
+    socket.on('all-players-finished', (results) => {
+        setFinalResults(results)
+    })
+    return () => socket.off('all-players-finished')
+    }, [])
+    
 
 
     // 2. Join the room on mount
@@ -295,7 +294,7 @@ export default function SudokuGrid({ roomId, userName }) {
                 : 'border-l border-gray-300'
 
             const borderRight = c === 8
-            ? 'border-r-4 border-red-700'
+            ? 'border-r-4 border-gray-700'
             : c % 3 === 2
                 ? 'border-r-2 border-gray-700'
                 : 'border-r border-gray-300'
