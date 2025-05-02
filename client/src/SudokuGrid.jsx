@@ -15,18 +15,7 @@ function isComplete(grid) {
     return nums.length === 9 && new Set(nums).size === 9;
   }
 
-  function handleNumberPadClick(num) {
-    if (!selectedCell) return;
-    const { row, col } = selectedCell;
-    if (serverGrid && serverGrid[row][col] !== '') return;
-  
-    setGrid(g => {
-      const next = g.map(r => [...r]);
-      next[row][col] = num;
-      return next;
-    });
-    socket.emit('cell-update', { roomId, row, col, value: num });
-  }
+
   
   
   // 3. Full Sudoku validity
@@ -53,6 +42,19 @@ function isComplete(grid) {
       }
     }
     return true;
+  }
+
+  function handleNumberPadClick(num) {
+    if (!selectedCell) return;
+    const { row, col } = selectedCell;
+    if (serverGrid && serverGrid[row][col] !== '') return;
+  
+    setGrid(g => {
+      const next = g.map(r => [...r]);
+      next[row][col] = num;
+      return next;
+    });
+    socket.emit('cell-update', { roomId, row, col, value: num });
   }
   
 
@@ -353,7 +355,7 @@ export default function SudokuGrid({ roomId, userName }) {
                         ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
 
                         /* Bottom border */
-                        ${r === 8 ? 'border-b-4 border-red-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
+                        ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
 
                         /* Left border */
                         ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
@@ -365,7 +367,7 @@ export default function SudokuGrid({ roomId, userName }) {
                         ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
                     `}
                     />
-                            
+
 
               )
               
@@ -373,17 +375,31 @@ export default function SudokuGrid({ roomId, userName }) {
         )}
         </div>
 
-        <div className="mt-4 flex gap-2 justify-center">
-            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
+        <div className="mt-6 grid grid-cols-5 gap-2">
+            {[1, 2, 3, 4, 5].map(n => (
                 <button
                 key={n}
-                onClick={() => handleNumberPadClick(String(n))}
-                className="w-10 h-10 text-lg bg-white rounded shadow hover:bg-blue-100"
+                onClick={() => handleNumberClick(String(n))}
+                className="bg-white border rounded text-lg w-10 h-10 hover:bg-blue-100"
+                >
+                {n}
+                </button>
+            ))}
+            {[6, 7, 8, 9, '⌫'].map(n => (
+                <button
+                key={n}
+                onClick={() =>
+                    n === '⌫'
+                    ? handleNumberClick('')
+                    : handleNumberClick(String(n))
+                }
+                className="bg-white border rounded text-lg w-10 h-10 hover:bg-blue-100"
                 >
                 {n}
                 </button>
             ))}
             </div>
+
 
 
 
