@@ -183,7 +183,10 @@ export default function SudokuGrid({ roomId, userName }) {
 
 
 
-
+  if (!Array.isArray(grid)) {
+    return <div className="text-center mt-10 text-red-600">Loading puzzle...</div>
+  }
+  
 
   return (
     <>
@@ -208,6 +211,7 @@ export default function SudokuGrid({ roomId, userName }) {
          )}
 
     <div className="grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0">
+    console.log('typeof grid:', typeof grid, grid)
 
         {grid.map((row, r) =>
             row.map((val, c) => {
