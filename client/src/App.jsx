@@ -9,7 +9,7 @@ export default function App() {
   const defaultRoom = urlParams.get('room') || ''
   const [roomId, setRoomId] = useState(defaultRoom)
   
-
+ //daaamn
 
   const [joined, setJoined] = useState(false)
   const [initialGrid, setInitialGrid] = useState(null)
@@ -82,13 +82,16 @@ export default function App() {
       <h2 className="text-xl font-semibold">
         Current room is: {roomId} — You are: {userName}
       </h2>
-      <p className="text-sm text-gray-500">
-        Share to invite someone:
-        <br />
-        <span className="font-mono bg-gray-100 px-2 py-1 rounded">
-          {window.location.origin}?room={roomId}
-        </span>
-      </p>
+      <button
+          onClick={() => {
+            navigator.clipboard.writeText(`${window.location.origin}?room=${roomId}`)
+            alert('Link copied!')
+          }}
+          className="flex items-center gap-2 px-3 py-2 text-sm bg-white rounded border shadow-sm hover:bg-gray-100"
+        >
+          <span>📋 Copy Room Link</span>
+        </button>
+
 
 
       <button
@@ -130,7 +133,6 @@ export default function App() {
           </div>
         </div>
       )}
-
 
       <SudokuGrid
         roomId={roomId}
