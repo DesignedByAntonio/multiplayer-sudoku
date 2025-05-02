@@ -204,6 +204,17 @@ export default function SudokuGrid({ roomId, userName }) {
     socket.emit('cell-update', { roomId, row: r, col: c, value: val })
   }
 
+
+  function handleForfeit() {
+    socket.emit('player-finished', {
+      roomId,
+      userName,
+      time: null
+        })
+    }
+  
+
+
   // 5. Render the grid
 
 
@@ -243,11 +254,16 @@ export default function SudokuGrid({ roomId, userName }) {
             <h3 className="text-lg font-bold mb-4 text-center">🎉 All players finished!</h3>
             <ul className="space-y-2 text-sm">
                 {finalResults
-                .sort((a, b) => a.time - b.time)
+                .sort((a, b) => {
+                    const ta = typeof a.time === 'number' ? a.time : Infinity
+                    const tb = typeof b.time === 'number' ? b.time : Infinity
+                    return ta - tb
+                  })
+                  
                 .map((r, i) => (
                     <li key={i} className="flex justify-between">
                     <span>{i + 1}. {r.userName}</span>
-                    <span>{r.time === 'forfeit' ? 'Forfeit' : `${Math.floor(r.time / 1000)}s`}</span>
+                    <span>{r.time === null ? 'Forfeit' : `${Math.floor(r.time / 1000)}s`}</span>
                     </li>
                 ))}
             </ul>
@@ -342,6 +358,13 @@ export default function SudokuGrid({ roomId, userName }) {
             })
         )}
         </div>
+        <button
+            onClick={handleForfeit}
+            className="mt-4 px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+            Forfeit Match
+        </button>
+
     </>
 
   )
