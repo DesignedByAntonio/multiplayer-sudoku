@@ -40,9 +40,7 @@ export default function App() {
 
   async function loadLeaderboard() {
     try {
-      const res = await fetch(
-        `${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`
-      )
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leaderboard?roomId=${roomId}`)
       const data = await res.json()
       setScores(data)
       setShowLb(true)
@@ -50,6 +48,7 @@ export default function App() {
       console.error('Failed to load leaderboard', err)
     }
   }
+  
   
 
   if (!joined) {
