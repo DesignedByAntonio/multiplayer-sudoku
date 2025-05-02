@@ -58,6 +58,8 @@ export default function SudokuGrid({ roomId, userName }) {
 
      
      const [players, setPlayers] = useState({})
+     const [finalResults, setFinalResults] = useState(null)
+
 
 
      useEffect(() => {
@@ -89,12 +91,36 @@ export default function SudokuGrid({ roomId, userName }) {
         }
       }, [serverGrid])
 
-
+    
+      useEffect(() => {
+        socket.on('player-finished', ({ userName }) => {
+          console.log(`${userName} has finished!`)
+          // Optionally: flash a banner, update UI
+        })
+      
+        return () => socket.off('player-finished')
+      }, [])
+      
 
   // win detection: when local player solves, emit to server AND record result
   useEffect(() => {
     if (isComplete(grid) && isValidSudoku(grid)) {
-      socket.emit('game-won', { roomId, userName })
+        const endTime = Date.now()
+        socket.emit('player-finished', {
+          roomId,
+          userName,
+          time: endTime
+        })
+
+
+    useEffect(() => {
+        socket.on('all-players-finished', (results) => {
+            setFinalResults(results)
+        })
+        return () => socket.off('all-players-finished')
+        }, [])
+        
+    
 
       // compute elapsed time in seconds
       const elapsedMs = startTime ? Date.now() - startTime : 0
@@ -211,6 +237,36 @@ export default function SudokuGrid({ roomId, userName }) {
             </div>
          )}
 
+        {finalResults && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center">
+            <div className="absolute inset-0 bg-black opacity-50" />
+            <div className="relative bg-white rounded-lg shadow-lg p-6 w-80">
+            <h3 className="text-lg font-bold mb-4 text-center">🎉 All players finished!</h3>
+            <ul className="space-y-2 text-sm">
+                {finalResults
+                .sort((a, b) => a.time - b.time)
+                .map((r, i) => (
+                    <li key={i} className="flex justify-between">
+                    <span>{i + 1}. {r.userName}</span>
+                    <span>{r.time === 'forfeit' ? 'Forfeit' : `${Math.floor(r.time / 1000)}s`}</span>
+                    </li>
+                ))}
+            </ul>
+            <button
+                onClick={() => setFinalResults(null)}
+                className="mt-4 w-full px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+                Close
+            </button>
+            </div>
+        </div>
+        )}
+
+
+
+
+
+
     <div className="grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0">
     
 
@@ -246,27 +302,7 @@ export default function SudokuGrid({ roomId, userName }) {
 
 
             return (
-                // <input
-                //     key={`${r}-${c}`}
-                //     type="text"
-                //     maxLength="1"
-                //     value={val}
-                //     onChange={e => onChange(r, c, e)}
-                //     onFocus={() => setSelectedCell({ row: r, col: c })}
-                //     onBlur={() => setSelectedCell(null)}
-                //     readOnly={isClue}
-                //     disabled={disabled}
-                //     className={`
-                //         w-10 h-10 text-center
-                //         ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white focus:outline-none'}
-                //         ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
-                //         ${selectedCell && (selectedCell.row === r || selectedCell.col === c) ? 'bg-yellow-100' : ''}
-                //         hover:bg-blue-100
-                //         transition duration-150
-                //         ${borderTop} ${borderBottom} ${borderLeft} ${borderRight}
-                //       `}
-                      
-                //     />
+
                 <input
                     key={`${r}-${c}`}
                     type="text"
@@ -300,10 +336,6 @@ export default function SudokuGrid({ roomId, userName }) {
                         ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
                     `}
                     />
-
-
-                    
-
 
 
               )
