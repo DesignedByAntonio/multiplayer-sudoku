@@ -99,20 +99,28 @@ export default function App() {
         View Leaderboard
       </button>
 
-      {showLb && (
-        <div className="fixed inset-0 z-20 flex items-center justify-center">
+      {showLb && Array.isArray(scores) && (
+        <div className="fixed inset-0 z-30 flex items-center justify-center">
           <div className="absolute inset-0 bg-black opacity-50" />
           <div className="relative bg-white rounded-lg shadow-lg p-6 w-80">
             <h3 className="text-lg font-bold mb-4">Top Times</h3>
             <ul className="space-y-2 max-h-64 overflow-y-auto">
-              {scores.map((r, i) => (
-                <li key={i} className="flex justify-between">
-                  <span>
-                    {i + 1}. {r.userName}
-                  </span>
-                  <span>{r.time}s</span>
-                </li>
-              ))}
+              {scores
+                .sort((a, b) => {
+                  const ta = typeof a.time === 'number' ? a.time : Infinity
+                  const tb = typeof b.time === 'number' ? b.time : Infinity
+                  return ta - tb
+                })
+                .map((r, i) => (
+                  <li key={i} className="flex justify-between">
+                    <span>{i + 1}. {r.userName}</span>
+                    <span>
+                      {r.time === null || r.time === 'forfeit'
+                        ? 'Forfeit'
+                        : `${r.time}s`}
+                    </span>
+                  </li>
+                ))}
             </ul>
             <button
               onClick={() => setShowLb(false)}
@@ -123,6 +131,7 @@ export default function App() {
           </div>
         </div>
       )}
+
 
       <SudokuGrid
         roomId={roomId}
