@@ -44,28 +44,7 @@ function isComplete(grid) {
     return true;
   }
 
-  function handleNumberClick(num) {
-    if (!selectedCell) return;
-    const { row, col } = selectedCell;
-  
-    // Prevent changing a clue cell
-    if (serverGrid && serverGrid[row][col] !== '') return;
-  
-    const val = num === '⌫' ? '' : num;
-  
-    setGrid(g => {
-      const next = g.map(r => [...r]);
-      next[row][col] = val;
-      return next;
-    });
-  
-    socket.emit('cell-update', {
-      roomId,
-      row,
-      col,
-      value: val
-    });
-  }
+
   
 
 export default function SudokuGrid({ roomId, userName }) {
@@ -228,6 +207,29 @@ export default function SudokuGrid({ roomId, userName }) {
       return next
     })
     socket.emit('cell-update', { roomId, row: r, col: c, value: val })
+  }
+
+  function handleNumberClick(num) {
+    if (!selectedCell) return;
+    const { row, col } = selectedCell;
+  
+    // Prevent changing a clue cell
+    if (serverGrid && serverGrid[row][col] !== '') return;
+  
+    const val = num === '⌫' ? '' : num;
+  
+    setGrid(g => {
+      const next = g.map(r => [...r]);
+      next[row][col] = val;
+      return next;
+    });
+  
+    socket.emit('cell-update', {
+      roomId,
+      row,
+      col,
+      value: val
+    });
   }
 
 
