@@ -114,6 +114,29 @@ io.on('connection', socket => {
     io.to(roomId).emit('user-joined', userName)
   })
 
+  socket.on('player-finished', ({ roomId, userName, time }) => {
+    const player = roomData?.[roomId]?.players?.[userName]
+    if (!player) return
+  
+    player.end = time
+  
+    // Notify others that this player finished
+    socket.to(roomId).emit('player-finished', { userName, time })
+  
+    // If all players are done or forfeited, send final leaderboard
+    const players = roomData[roomId].players
+    const done = Object.values(players).every(p => p.end !== null || p.forfeit)
+    if (done) {
+      const results = Object.entries(players).map(([name, p]) => ({
+        userName: name,
+        time: p.forfeit ? 'forfeit' : p.end - p.start
+      }))
+      io.to(roomId).emit('all-players-finished', results)
+    }
+  })
+  
+
+
   // socket.on('cell-update', data => {
   //   // data: { roomId, row, col, value }
   //   socket.to(data.roomId).emit('cell-update', data)
