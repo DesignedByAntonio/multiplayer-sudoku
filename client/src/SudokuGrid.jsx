@@ -187,8 +187,9 @@ export default function SudokuGrid({ roomId, userName }) {
     return <div className="text-center mt-10 text-red-600">Loading puzzle...</div>
   }
   
-
+  console.log('typeof grid:', typeof grid, grid)
   return (
+    
     <>
         {winner && (
             <div className="fixed inset-0 z-20 flex items-center justify-center">
@@ -209,7 +210,7 @@ export default function SudokuGrid({ roomId, userName }) {
                 </div>
             </div>
          )}
-console.log('typeof grid:', typeof grid, grid)
+
     <div className="grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0">
     
 
