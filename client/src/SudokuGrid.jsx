@@ -260,7 +260,7 @@ export default function SudokuGrid({ roomId, userName }) {
     });
     console.log('Click registered:', num, 'Cell:', selectedCell)
 
-  }
+  } 
 
 
 
