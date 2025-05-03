@@ -479,8 +479,11 @@ export default function SudokuGrid({ roomId, userName }) {
                             ${isClue ? 'bg-gray-100 text-gray-700' : 'bg-white text-black'}
                             ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
                             ${selectedValue && val === selectedValue
-                                ? 'text-green-700 font-bold'
+                                ? (selectedCell?.row === r && selectedCell?.col === c
+                                    ? 'text-blue-800 font-bold'
+                                    : 'text-blue-800 font-bold bg-gray-200')
                                 : ''}
+                              
                               
                               
                             ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
