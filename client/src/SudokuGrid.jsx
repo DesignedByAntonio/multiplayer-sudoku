@@ -498,29 +498,66 @@ export default function SudokuGrid({ roomId, userName }) {
                     //         ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
                     //     `}
                     //     />
+
+                    // ---------------------------------------------------------------------
+
+
+                    // <div
+                    //     key={`${r}-${c}`}
+                    //     onClick={() => setSelectedCell({ row: r, col: c })}
+                    //     className={`
+                    //         w-10 h-10 relative flex items-center justify-center
+                    //         ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white'}
+                    //         ${selectedCell?.row === r && selectedCell?.col === c ? 'outline outline-2 outline-blue-400' : ''}
+                    //         ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
+                    //         ${borderTop} ${borderBottom} ${borderLeft} ${borderRight}
+                    //     `}
+                    //     >
+                    //     {grid[r][c] !== '' ? (
+                    //         <span className="text-lg">{grid[r][c]}</span>
+                    //     ) : (
+                    //         <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 text-[10px] text-gray-500 pointer-events-none px-0.5 py-0.5">
+                    //         {Array.from({ length: 9 }, (_, i) => (
+                    //             <div key={i} className="flex items-center justify-center">
+                    //             {notes[r][c].includes((i + 1).toString()) ? i + 1 : ''}
+                    //             </div>
+                    //         ))}
+                    //         </div>
+                    //     )}
+                    // </div>
+
                     <div
-                        key={`${r}-${c}`}
-                        onClick={() => setSelectedCell({ row: r, col: c })}
-                        className={`
-                            w-10 h-10 relative flex items-center justify-center
-                            ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white'}
-                            ${selectedCell?.row === r && selectedCell?.col === c ? 'outline outline-2 outline-blue-400' : ''}
-                            ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
-                            ${borderTop} ${borderBottom} ${borderLeft} ${borderRight}
-                        `}
-                        >
-                        {grid[r][c] !== '' ? (
-                            <span className="text-lg">{grid[r][c]}</span>
-                        ) : (
-                            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 text-[10px] text-gray-500 pointer-events-none px-0.5 py-0.5">
-                            {Array.from({ length: 9 }, (_, i) => (
-                                <div key={i} className="flex items-center justify-center">
-                                {notes[r][c].includes((i + 1).toString()) ? i + 1 : ''}
-                                </div>
-                            ))}
-                            </div>
-                        )}
-                    </div>
+  key={`${r}-${c}`}
+  onClick={() => setSelectedCell({ row: r, col: c })}
+  className={`
+    w-10 h-10 relative flex items-center justify-center
+    text-center text-lg
+    ${isClue ? 'bg-gray-100 font-bold text-black' : 'bg-white'}
+    ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
+    ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
+    ${selectedCell?.row === r && selectedCell?.col === c ? 'outline outline-2 outline-blue-400' : ''}
+
+    /* Grid borders for 3x3 layout */
+    ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
+    ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
+    ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
+    ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
+    ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
+  `}
+>
+  {grid[r][c] !== '' ? (
+    <span>{grid[r][c]}</span>
+  ) : (
+    <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 text-[10px] text-gray-500 pointer-events-none px-0.5 py-0.5">
+      {Array.from({ length: 9 }, (_, i) => (
+        <div key={i} className="flex items-center justify-center">
+          {notes[r][c].includes((i + 1).toString()) ? i + 1 : ''}
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
 
 
