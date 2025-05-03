@@ -68,6 +68,7 @@ export default function SudokuGrid({ roomId, userName }) {
     const [timerRunning, setTimerRunning] = useState(true)
     const [timerId, setTimerId] = useState(null)
 
+    const [showOthers, setShowOthers] = useState(true)
 
 
 
@@ -173,10 +174,13 @@ export default function SudokuGrid({ roomId, userName }) {
     useEffect(() => {
         socket.connect()
         console.log('[SOCKET] connected:', socket.connected)
-        socket.emit('join-room', { roomId, userName })
+        socket.emit('join-room', { roomId, userName, showOthers })
+
         
         // 3. Listen for remote updates
         socket.on('cell-update', ({ row, col, value }) => {
+            if (!showOthers) return  // 👈 don't reflect remote inputs
+
             setGrid(g => {
             const next = g.map(r => [...r])
             next[row][col] = value
@@ -192,7 +196,9 @@ export default function SudokuGrid({ roomId, userName }) {
   }, [roomId, userName])
 
   useEffect(() => {
-    socket.on('room-data', ({ puzzle, players }) => {
+    socket.on('room-data', ({ puzzle, players, showOthers  }) => {
+        setShowOthers(showOthers)
+        
         const flat = puzzle.split('').map(c => (c === '0' ? '' : c))
         const twoD = Array.from({ length: 9 }, (_, r) =>
           flat.slice(r * 9, r * 9 + 9)
@@ -317,6 +323,15 @@ export default function SudokuGrid({ roomId, userName }) {
                 </div>
             </div>
          )}
+
+
+         
+         <p className="text-xs text-gray-500 italic">
+            {showOthers
+                ? 'Players can see each other’s answers'
+                : 'Answers are hidden from other players'}
+            </p>
+
 
         {finalResults && (
         <div className="fixed inset-0 z-30 flex items-center justify-center">
