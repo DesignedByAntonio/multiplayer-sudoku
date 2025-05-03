@@ -64,6 +64,11 @@ export default function SudokuGrid({ roomId, userName }) {
      
      const [players, setPlayers] = useState({})
      const [finalResults, setFinalResults] = useState(null)
+     const [elapsed, setElapsed] = useState(0)
+    const [timerRunning, setTimerRunning] = useState(true)
+    const [timerId, setTimerId] = useState(null)
+
+
 
 
 
@@ -89,12 +94,23 @@ export default function SudokuGrid({ roomId, userName }) {
 
     // Guarded effect:
     useEffect(() => {
-        // Don’t run this until serverGrid is truthy (i.e. not null)
         if (serverGrid) {
           setGrid(serverGrid)
-          setStartTime(Date.now())
+          const now = Date.now()
+          setStartTime(now)
+      
+          const id = setInterval(() => {
+            setElapsed(prev => prev + 1)
+          }, 1000)
+      
+          setTimerId(id)
+          setTimerRunning(true)
+      
+          return () => clearInterval(id)
         }
       }, [serverGrid])
+      
+      
 
     
       useEffect(() => {
@@ -119,6 +135,11 @@ export default function SudokuGrid({ roomId, userName }) {
       // compute elapsed time in seconds
       const elapsedMs = startTime ? Date.now() - startTime : 0
       const elapsedSec = Math.floor(elapsedMs / 1000)
+
+
+      clearInterval(timerId)
+    setTimerRunning(false)  
+
 
       // send to leaderboard API
       fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`, {
@@ -236,14 +257,23 @@ export default function SudokuGrid({ roomId, userName }) {
 
   }
 
+  function formatTime(seconds) {
+    const m = String(Math.floor(seconds / 60)).padStart(2, '0')
+    const s = String(seconds % 60).padStart(2, '0')
+    return `${m}:${s}`
+  }
+  
+
 
   function handleForfeit() {
     socket.emit('player-finished', {
       roomId,
       userName,
       time: null
-        })
-    }
+    })
+    clearInterval(timerId)
+    setTimerRunning(false)
+  }
   
 
 
@@ -308,6 +338,29 @@ export default function SudokuGrid({ roomId, userName }) {
             </div>
         </div>
         )}
+
+
+
+<div className="flex items-center gap-4 text-xl font-mono text-gray-800 mt-4">
+  ⏱️ Time: {formatTime(elapsed)}
+  <button
+    onClick={() => {
+      if (timerRunning) {
+        clearInterval(timerId)
+      } else {
+        const id = setInterval(() => {
+          setElapsed(prev => prev + 1)
+        }, 1000)
+        setTimerId(id)
+      }
+      setTimerRunning(!timerRunning)
+    }}
+    className="text-sm px-2 py-1 bg-white border rounded hover:bg-blue-100"
+  >
+    {timerRunning ? 'Pause' : 'Resume'}
+  </button>
+</div>
+
 
 
 
