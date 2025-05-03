@@ -70,6 +70,12 @@ export default function SudokuGrid({ roomId, userName }) {
 
     const [showOthers, setShowOthers] = useState(true)
 
+    const [noteMode, setNoteMode] = useState(false)
+    const [notes, setNotes] = useState(
+    Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []))
+    )
+
+
 
 
 
@@ -249,22 +255,49 @@ export default function SudokuGrid({ roomId, userName }) {
   
     // Prevent changing a clue cell
     if (serverGrid && serverGrid[row][col] !== '') return;
-  
+
+
+    const isNote = noteMode
     const val = num === '⌫' ? '' : num;
-  
-    setGrid(g => {
-      const next = g.map(r => [...r]);
-      next[row][col] = val;
-      return next;
-    });
-  
-    socket.emit('cell-update', {
-      roomId,
-      row,
-      col,
-      value: val
-    });
-    console.log('Click registered:', num, 'Cell:', selectedCell)
+
+    if (isNote) {
+        // toggle note
+        setNotes(prev => {
+          const next = prev.map(row => row.map(cell => [...cell]))
+          const notesInCell = next[row][col]
+          if (grid[row][col] !== '') return prev // ignore if main number exists
+    
+          const index = notesInCell.indexOf(val)
+          if (index > -1) {
+            notesInCell.splice(index, 1)
+          } else {
+            notesInCell.push(val)
+            notesInCell.sort()
+          }
+          return next
+        })
+      } else {
+        
+            setGrid(g => {
+            const next = g.map(r => [...r]);
+            next[row][col] = val;
+            return next;
+            });
+
+            setNotes(prev => {
+                const next = prev.map(row => row.map(cell => [...cell]))
+                next[row][col] = [] // clear notes on main input
+                return next
+              })
+        
+            socket.emit('cell-update', {
+            roomId,
+            row,
+            col,
+            value: val
+            });
+            console.log('Click registered:', num, 'Cell:', selectedCell)
+    }
 
   } 
 
@@ -325,7 +358,7 @@ export default function SudokuGrid({ roomId, userName }) {
          )}
 
 
-         
+
          <p className="text-xs text-gray-500 italic">
             {showOthers
                 ? 'Players can see each other’s answers'
@@ -432,39 +465,63 @@ export default function SudokuGrid({ roomId, userName }) {
 
                 return (
 
-                    <input
+                    // <input
+                    //     key={`${r}-${c}`}
+                    //     type="button"
+                    //     maxLength="1"
+                    //     value={val}
+                    //     onClick={() => setSelectedCell({ row: r, col: c })}
+                    //     onFocus={() => setSelectedCell({ row: r, col: c })}
+                    //     // onBlur={() => setSelectedCell(null)}
+                    //     readOnly={isClue}
+                    //     disabled={disabled}
+                    //     className={`
+                    //         w-10 h-10 text-center
+                    //         ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white focus:outline-none'}
+                    //         ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
+                    //         ${selectedCell && (selectedCell.row === r || selectedCell.col === c) ? 'bg-yellow-100' : ''}
+                    //         hover:bg-blue-100
+
+                    //         /* Top border */
+                    //         ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
+
+                    //         /* Bottom border */
+                    //         ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
+
+                    //         /* Left border */
+                    //         ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
+
+                    //         /* Right border */
+                    //         ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
+
+                    //         /* Middle centers — extra tweak */
+                    //         ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
+                    //     `}
+                    //     />
+                    <div
                         key={`${r}-${c}`}
-                        type="button"
-                        maxLength="1"
-                        value={val}
                         onClick={() => setSelectedCell({ row: r, col: c })}
-                        onFocus={() => setSelectedCell({ row: r, col: c })}
-                        // onBlur={() => setSelectedCell(null)}
-                        readOnly={isClue}
-                        disabled={disabled}
                         className={`
-                            w-10 h-10 text-center
-                            ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white focus:outline-none'}
+                            w-10 h-10 relative flex items-center justify-center
+                            ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white'}
+                            ${selectedCell?.row === r && selectedCell?.col === c ? 'outline outline-2 outline-blue-400' : ''}
                             ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
-                            ${selectedCell && (selectedCell.row === r || selectedCell.col === c) ? 'bg-yellow-100' : ''}
-                            hover:bg-blue-100
-
-                            /* Top border */
-                            ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
-
-                            /* Bottom border */
-                            ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
-
-                            /* Left border */
-                            ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
-
-                            /* Right border */
-                            ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
-
-                            /* Middle centers — extra tweak */
-                            ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
+                            ${borderTop} ${borderBottom} ${borderLeft} ${borderRight}
                         `}
-                        />
+                        >
+                        {grid[r][c] !== '' ? (
+                            <span className="text-lg">{grid[r][c]}</span>
+                        ) : (
+                            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 text-[10px] text-gray-500 pointer-events-none px-0.5 py-0.5">
+                            {Array.from({ length: 9 }, (_, i) => (
+                                <div key={i} className="flex items-center justify-center">
+                                {notes[r][c].includes((i + 1).toString()) ? i + 1 : ''}
+                                </div>
+                            ))}
+                            </div>
+                        )}
+                    </div>
+
 
 
                 )
@@ -473,7 +530,7 @@ export default function SudokuGrid({ roomId, userName }) {
             )}
             </div>
 
- </div>
+        </div>
 
         <div className="mt-6 grid grid-cols-5 gap-2">
             {[1, 2, 3, 4, 5].map(n => (
@@ -499,6 +556,14 @@ export default function SudokuGrid({ roomId, userName }) {
                 </button>
             ))}
             </div>
+
+            <button
+                onClick={() => setNoteMode(prev => !prev)}
+                className={`px-3 py-1 rounded ${noteMode ? 'bg-yellow-400' : 'bg-gray-200'} text-black font-medium`}
+                >
+                {noteMode ? 'Notes: ON' : 'Notes: OFF'}
+                </button>
+
 
 
 
