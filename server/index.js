@@ -78,7 +78,7 @@ const io = new Server(server, {
 io.on('connection', socket => {
   console.log('⚡️ New client connected:', socket.id)
 
-  socket.on('join-room', ({ roomId, userName }) => {
+  socket.on('join-room', ({ roomId, userName, showOthers }) => {
     socket.join(roomId)
     console.log(`${userName} joined room ${roomId}`)
 
@@ -89,7 +89,8 @@ io.on('connection', socket => {
 
       roomData[roomId] = {
         puzzle,
-        players: {}
+        players: {},
+        showOthers: showOthers ?? true  // default to true
       }
     }
 
@@ -103,14 +104,12 @@ io.on('connection', socket => {
     // Send puzzle + players to new player
     socket.emit('room-data', {
       puzzle: roomData[roomId].puzzle,
-      players: roomData[roomId].players
+      players: roomData[roomId].players,
+      showOthers: roomData[roomId].showOthers
     })
 
     // Notify others in room
     socket.to(roomId).emit('player-joined', userName)
-
-
-
     io.to(roomId).emit('user-joined', userName)
   })
 
