@@ -476,14 +476,14 @@ export default function SudokuGrid({ roomId, userName }) {
                         className={`
                             w-10 h-10 relative flex items-center justify-center
                             text-center text-lg
-                            ${isClue ? 'bg-gray-200 text-gray-600' : 'bg-white text-black'}
+                            ${isClue ? 'bg-gray-100 text-gray-700' : 'bg-white text-black'}
                             ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
-                            ${selectedValue && val === selectedValue && !(r === selectedCell?.row && c === selectedCell?.col)
-                                ? 'text-red-700 font-bold'
+                            ${selectedValue && val === selectedValue
+                                ? 'text-green-700 font-bold'
                                 : ''}
                               
+                              
                             ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
-                            ${selectedCell?.row === r && selectedCell?.col === c ? 'ring-2 ring-blue-300' : ''}
 
 
                             /* Grid borders for 3x3 layout */
