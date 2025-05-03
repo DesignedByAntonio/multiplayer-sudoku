@@ -9,12 +9,14 @@ export default function App() {
   const defaultRoom = urlParams.get('room') || ''
   const [roomId, setRoomId] = useState(defaultRoom)
   
- //daaamn
+ 
 
   const [joined, setJoined] = useState(false)
   const [initialGrid, setInitialGrid] = useState(null)
   const [showLb, setShowLb]   = useState(false)
   const [scores, setScores]   = useState([])
+  const [showOthers, setShowOthers] = useState(true)
+
 
 
 
@@ -66,6 +68,23 @@ export default function App() {
           value={roomId}
           onChange={e => setRoomId(e.target.value)}
         />
+
+
+
+
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={showOthers}
+            onChange={e => setShowOthers(e.target.checked)}
+          />
+          Allow players to see each other’s answers
+        </label>
+
+
+
+
+
         <button
           onClick={joinRoom}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
