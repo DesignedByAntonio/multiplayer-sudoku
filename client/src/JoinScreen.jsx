@@ -7,11 +7,13 @@ export default function JoinScreen({ onJoin }) {
 
   const [roomId, setRoomId] = useState(roomIdFromUrl)
   const [userName, setUserName] = useState('')
+  const [showOthers, setShowOthers] = useState(true)
+
 
   function handleSubmit(e) {
     e.preventDefault()
     if (roomId && userName) {
-      onJoin({ roomId, userName })
+        onJoin({ userName, roomId, showOthers })
     }
   }
 
@@ -35,6 +37,19 @@ export default function JoinScreen({ onJoin }) {
           onChange={e => setRoomId(e.target.value)}
           className="w-full p-2 border rounded"
         />
+
+
+
+        <label className="flex items-center gap-2 text-sm text-gray-700">
+            <input
+                type="checkbox"
+                checked={showOthers}
+                onChange={e => setShowOthers(e.target.checked)}
+                className="accent-blue-600"
+            />
+            Show other players’ answers
+        </label>
+
 
         <button
           type="submit"
