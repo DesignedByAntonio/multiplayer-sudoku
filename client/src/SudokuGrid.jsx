@@ -220,19 +220,24 @@ export default function SudokuGrid({ roomId, userName }) {
 
   // 4. Handle local edits
   function onChange(r, c, e) {
-    if (serverGrid && serverGrid[r][c] !== '') return;  // ignore attempts on clues
-    const val = e.target.value.slice(-1).replace(/[^1-9]/g, '') // 1–9 only
+    if (!timerRunning) return
+    if (serverGrid && serverGrid[r][c] !== '') return
+  
+    const val = e.target.value.slice(-1).replace(/[^1-9]/g, '')
     setGrid(g => {
       const next = g.map(r => [...r])
       next[r][c] = val
       return next
     })
+  
     socket.emit('cell-update', { roomId, row: r, col: c, value: val })
   }
+  
 
   function handleNumberClick(num) {
-    console.log('Selected Cell:', selectedCell)
+    // console.log('Selected Cell:', selectedCell)
     if (!selectedCell) return;
+    if (!timerRunning || !selectedCell) return
     
     const { row, col } = selectedCell;
   
@@ -256,6 +261,10 @@ export default function SudokuGrid({ roomId, userName }) {
     console.log('Click registered:', num, 'Cell:', selectedCell)
 
   }
+
+
+
+
 
   function formatTime(seconds) {
     const m = String(Math.floor(seconds / 60)).padStart(2, '0')
@@ -365,84 +374,91 @@ export default function SudokuGrid({ roomId, userName }) {
 
 
 
-
-
-    <div className="grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0">
-    
-
-        {grid.map((row, r) =>
-            row.map((val, c) => {
-            // compute isClue inside a block arrow function
-            const isClue = serverGrid && serverGrid[r][c] !== ''
-            const disabled = isClue || Boolean(winner)
-
-            const borderTop = r === 0
-            ? 'border-t-4 border-gray-700'
-            : r % 3 === 0
-                ? 'border-t-2 border-gray-700'
-                : 'border-t border-gray-300'
-
-            const borderBottom = r === 8
-            ? 'border-b-4 border-gray-700'
-            : r % 3 === 2
-                ? 'border-b-2 border-gray-700'
-                : 'border-b border-gray-300'
-
-            const borderLeft = c === 0
-            ? 'border-l-4 border-gray-700'
-            : c % 3 === 0
-                ? 'border-l-2 border-gray-700'
-                : 'border-l border-gray-300'
-
-            const borderRight = c === 8
-            ? 'border-r-4 border-gray-700'
-            : c % 3 === 2
-                ? 'border-r-2 border-gray-700'
-                : 'border-r border-gray-300'
-
-
-            return (
-
-                <input
-                    key={`${r}-${c}`}
-                    type="button"
-                    maxLength="1"
-                    value={val}
-                    onClick={() => setSelectedCell({ row: r, col: c })}
-                    onFocus={() => setSelectedCell({ row: r, col: c })}
-                    // onBlur={() => setSelectedCell(null)}
-                    readOnly={isClue}
-                    disabled={disabled}
-                    className={`
-                        w-10 h-10 text-center
-                        ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white focus:outline-none'}
-                        ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
-                        ${selectedCell && (selectedCell.row === r || selectedCell.col === c) ? 'bg-yellow-100' : ''}
-                        hover:bg-blue-100
-
-                        /* Top border */
-                        ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
-
-                        /* Bottom border */
-                        ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
-
-                        /* Left border */
-                        ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
-
-                        /* Right border */
-                        ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
-
-                        /* Middle centers — extra tweak */
-                        ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
-                    `}
-                    />
-
-
-              )
-              
-            })
-        )}
+<div className="relative">
+    {/* Blur layer */}
+    {(!timerRunning && !winner && !finalResults) && (
+        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
+        <div className="text-xl font-semibold text-gray-700">⏸ Game is paused</div>
         </div>
+    )}
+
+        <div className="grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0">
+
+            {grid.map((row, r) =>
+                row.map((val, c) => {
+                // compute isClue inside a block arrow function
+                const isClue = serverGrid && serverGrid[r][c] !== ''
+                const disabled = isClue || Boolean(winner)
+
+                const borderTop = r === 0
+                ? 'border-t-4 border-gray-700'
+                : r % 3 === 0
+                    ? 'border-t-2 border-gray-700'
+                    : 'border-t border-gray-300'
+
+                const borderBottom = r === 8
+                ? 'border-b-4 border-gray-700'
+                : r % 3 === 2
+                    ? 'border-b-2 border-gray-700'
+                    : 'border-b border-gray-300'
+
+                const borderLeft = c === 0
+                ? 'border-l-4 border-gray-700'
+                : c % 3 === 0
+                    ? 'border-l-2 border-gray-700'
+                    : 'border-l border-gray-300'
+
+                const borderRight = c === 8
+                ? 'border-r-4 border-gray-700'
+                : c % 3 === 2
+                    ? 'border-r-2 border-gray-700'
+                    : 'border-r border-gray-300'
+
+
+                return (
+
+                    <input
+                        key={`${r}-${c}`}
+                        type="button"
+                        maxLength="1"
+                        value={val}
+                        onClick={() => setSelectedCell({ row: r, col: c })}
+                        onFocus={() => setSelectedCell({ row: r, col: c })}
+                        // onBlur={() => setSelectedCell(null)}
+                        readOnly={isClue}
+                        disabled={disabled}
+                        className={`
+                            w-10 h-10 text-center
+                            ${isClue ? 'bg-gray-100 font-bold cursor-not-allowed' : 'bg-white focus:outline-none'}
+                            ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : ''}
+                            ${selectedCell && (selectedCell.row === r || selectedCell.col === c) ? 'bg-yellow-100' : ''}
+                            hover:bg-blue-100
+
+                            /* Top border */
+                            ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
+
+                            /* Bottom border */
+                            ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
+
+                            /* Left border */
+                            ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
+
+                            /* Right border */
+                            ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
+
+                            /* Middle centers — extra tweak */
+                            ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
+                        `}
+                        />
+
+
+                )
+                
+                })
+            )}
+            </div>
+
+ </div>
 
         <div className="mt-6 grid grid-cols-5 gap-2">
             {[1, 2, 3, 4, 5].map(n => (
