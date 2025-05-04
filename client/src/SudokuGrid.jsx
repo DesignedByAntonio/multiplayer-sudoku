@@ -67,36 +67,34 @@ export default function SudokuGrid({ roomId, userName }) {
      const [elapsed, setElapsed] = useState(0)
     const [timerRunning, setTimerRunning] = useState(true)
     const [timerId, setTimerId] = useState(null)
+    const [flash, setFlash] = useState(false)
+
 
     const [showOthers, setShowOthers] = useState(true)
+    const [mistakes, setMistakes] = useState(0)
 
     const [noteMode, setNoteMode] = useState(false)
     const [notes, setNotes] = useState(
-    Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []))
-    )
-
-
-
-
-
-     useEffect(() => {
-        socket.on('connect', () => {
-          console.log('[SOCKET] connected to server:', socket.id)
-        })
-      
-        return () => socket.off('connect')
-      }, [])
-      
-      // ───────────────────────────────────────────────────────────────────
- // Play a win sound when someone wins
-    useEffect(() => {
-    if (winner) {
-        const audio = new Audio('/win-sound.mp3')
-        audio.play().catch(err => {
-        console.warn('Could not play win sound:', err)
-        })
-    }
-    }, [winner])
+        Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []))
+        )
+        useEffect(() => {
+            socket.on('connect', () => {
+            console.log('[SOCKET] connected to server:', socket.id)
+            })
+        
+            return () => socket.off('connect')
+        }, [])
+        
+        // ───────────────────────────────────────────────────────────────────
+    // Play a win sound when someone wins
+        useEffect(() => {
+        if (winner) {
+            const audio = new Audio('/win-sound.mp3')
+            audio.play().catch(err => {
+            console.warn('Could not play win sound:', err)
+            })
+        }
+        }, [winner])
 
 
     // Guarded effect:
@@ -156,7 +154,7 @@ export default function SudokuGrid({ roomId, userName }) {
           roomId,
           userName,
           time: elapsedSec,
-          mistakes: 0,                 // or hook up actual mistake count later
+          mistakes,                 
           date: new Date().toISOString()
         })
       })
@@ -250,7 +248,6 @@ export default function SudokuGrid({ roomId, userName }) {
     // console.log('Selected Cell:', selectedCell)
     if (!selectedCell) return;
     if (!timerRunning || !selectedCell) return
-    
     const { row, col } = selectedCell;
   
     // Prevent changing a clue cell
@@ -277,7 +274,15 @@ export default function SudokuGrid({ roomId, userName }) {
           return next
         })
       } else {
-        
+            if (serverGrid[row][col] !== '') return; // skip clues
+            const correct = serverGrid[row][col];
+            if (correct && correct !== val && grid[row][col] === '') {
+                setMistakes(prev => prev + 1);
+                setFlash(true)
+                setTimeout(() => setFlash(false), 300) // reset after animation
+            }
+      
+
             setGrid(g => {
             const next = g.map(r => [...r]);
             next[row][col] = val;
@@ -298,9 +303,9 @@ export default function SudokuGrid({ roomId, userName }) {
             });
             console.log('Click registered:', num, 'Cell:', selectedCell)
     }
-
   } 
 
+  
 
 
 
@@ -400,6 +405,7 @@ export default function SudokuGrid({ roomId, userName }) {
 
 <div className="flex items-center gap-4 text-xl font-mono text-gray-800 mt-4">
   ⏱️ Time: {formatTime(elapsed)}
+  <span className="text-red-600">❌ Mistakes: {mistakes}</span>
   <button
     onClick={() => {
       if (timerRunning) {
@@ -430,7 +436,7 @@ export default function SudokuGrid({ roomId, userName }) {
         </div>
     )}
 
-        <div className="grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0">
+        <div className={`grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0 transition ${flash ? 'flash-red' : ''}`}>
 
             {grid.map((row, r) =>
                 row.map((val, c) => {
@@ -480,11 +486,9 @@ export default function SudokuGrid({ roomId, userName }) {
                             ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
                             ${selectedValue && val === selectedValue
                                 ? (selectedCell?.row === r && selectedCell?.col === c
-                                    ? 'text-blue-800 font-bold'
-                                    : 'text-blue-800 font-bold bg-gray-200')
+                                    ? 'text-blue-700 font-bold'
+                                    : 'text-blue-700 font-bold bg-gray-200')
                                 : ''}
-                              
-                              
                               
                             ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
 
@@ -509,10 +513,6 @@ export default function SudokuGrid({ roomId, userName }) {
                             </div>
                         )}
                 </div>
-
-
-
-
                 )
                 
                 })

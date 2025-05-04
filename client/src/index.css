@@ -1,2 +1,13 @@
 /* client/src/index.css */
 @import "tailwindcss";
+
+
+
+@keyframes flash-red {
+  0% { background-color: #fca5a5; } /* red-300 */
+  100% { background-color: transparent; }
+}
+
+.flash-red {
+  animation: flash-red 0.3s ease-in-out;
+}
