@@ -72,7 +72,7 @@ export default function SudokuGrid({ roomId, userName }) {
 
     const [showOthers, setShowOthers] = useState(true)
     const [mistakes, setMistakes] = useState(0)
-
+    const [difficulty, setDifficulty] = useState('easy')
     const [noteMode, setNoteMode] = useState(false)
     const [notes, setNotes] = useState(
         Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []))
@@ -178,7 +178,7 @@ export default function SudokuGrid({ roomId, userName }) {
     useEffect(() => {
         socket.connect()
         console.log('[SOCKET] connected:', socket.connected)
-        socket.emit('join-room', { roomId, userName, showOthers })
+        socket.emit('join-room', { roomId, userName, showOthers, difficulty })
 
         
         // 3. Listen for remote updates
@@ -200,9 +200,9 @@ export default function SudokuGrid({ roomId, userName }) {
   }, [roomId, userName])
 
   useEffect(() => {
-    socket.on('room-data', ({ puzzle, players, showOthers  }) => {
+    socket.on('room-data', ({ puzzle, players, showOthers, difficulty  }) => {
         setShowOthers(showOthers)
-        
+        setDifficulty(difficulty || 'easy')
         const flat = puzzle.split('').map(c => (c === '0' ? '' : c))
         const twoD = Array.from({ length: 9 }, (_, r) =>
           flat.slice(r * 9, r * 9 + 9)

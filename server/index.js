@@ -78,17 +78,18 @@ const io = new Server(server, {
 io.on('connection', socket => {
   console.log('⚡️ New client connected:', socket.id)
 
-  socket.on('join-room', ({ roomId, userName, showOthers }) => {
+  socket.on('join-room', ({ roomId, userName, showOthers, difficulty = 'easy' }) => {
     socket.join(roomId)
     console.log(`${userName} joined room ${roomId}`)
 
      // Initialize room if it doesn't exist
      if (!roomData[roomId]) {
-      const list = puzzles['easy']
+      const list = puzzles[difficulty] || puzzles.easy
       const puzzle = list[Math.floor(Math.random() * list.length)].grid
 
       roomData[roomId] = {
         puzzle,
+        difficulty,
         players: {},
         showOthers: showOthers ?? true  // default to true
       }
@@ -105,7 +106,8 @@ io.on('connection', socket => {
     socket.emit('room-data', {
       puzzle: roomData[roomId].puzzle,
       players: roomData[roomId].players,
-      showOthers: roomData[roomId].showOthers
+      showOthers: roomData[roomId].showOthers,
+      difficulty: roomData[roomId].difficulty
     })
 
     // Notify others in room

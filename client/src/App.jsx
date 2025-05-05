@@ -16,6 +16,7 @@ export default function App() {
   const [showLb, setShowLb]   = useState(false)
   const [scores, setScores]   = useState([])
   const [showOthers, setShowOthers] = useState(true)
+  const [difficulty, setDifficulty] = useState('easy');
 
 
 
@@ -25,7 +26,7 @@ export default function App() {
     if (!userName || !roomId) return
   
     // 1. Fetch a puzzle (hardcode 'easy' for now)
-    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`)
+    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/${difficulty}`)
     const { grid } = await resp.json()
   
     // 2. Convert the 81-char string into a 9×9 array of '' or '1'–'9'
@@ -82,6 +83,15 @@ export default function App() {
         </label>
 
 
+        <select
+          className="px-3 py-2 border rounded"
+          value={difficulty}
+          onChange={e => setDifficulty(e.target.value)}
+        >
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
 
 
 
