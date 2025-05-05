@@ -93,6 +93,13 @@ app.post('/api/validate-puzzle', express.json(), (req, res) => {
 
 
 
+
+
+
+
+
+
+
 // Record a finished game
 app.post(
   '/api/result',
@@ -122,6 +129,73 @@ app.get(
     res.json(list)
   }
 )
+
+
+
+
+app.post('/api/validate-puzzle', express.json(), (req, res) => {
+  const { puzzle } = req.body
+  if (!puzzle || puzzle.length !== 81 || /[^0-9]/.test(puzzle)) {
+    return res.json({ valid: false, error: 'Invalid format' })
+  }
+
+  // Basic backtracking solver
+  const grid = puzzle.split('').map(c => (c === '0' ? '' : c))
+  const board = Array.from({ length: 9 }, (_, r) =>
+    grid.slice(r * 9, r * 9 + 9)
+  )
+
+  function isValid(board, r, c, val) {
+    for (let i = 0; i < 9; i++) {
+      if (board[r][i] === val || board[i][c] === val) return false
+    }
+    const boxRow = Math.floor(r / 3) * 3
+    const boxCol = Math.floor(c / 3) * 3
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        if (board[boxRow + i][boxCol + j] === val) return false
+      }
+    }
+    return true
+  }
+
+  function solve(b) {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (b[r][c] === '') {
+          for (let n = 1; n <= 9; n++) {
+            const s = String(n)
+            if (isValid(b, r, c, s)) {
+              b[r][c] = s
+              if (solve(b)) return true
+              b[r][c] = ''
+            }
+          }
+          return false
+        }
+      }
+    }
+    return true
+  }
+
+  const solvable = solve(board)
+  res.json({ valid: solvable })
+})
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const server = http.createServer(app)
 const io = new Server(server, {

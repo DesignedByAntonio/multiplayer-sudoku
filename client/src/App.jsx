@@ -168,6 +168,7 @@ export default function App() {
         userName={userName}
         initialGrid={initialGrid}
         difficulty={difficulty} 
+        showOthers={showOthers} 
       />
     </div>
   )

@@ -63,7 +63,7 @@ function isComplete(grid) {
 
   
 
-export default function SudokuGrid({ roomId, userName, difficulty }) {
+export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }) {
      // 1. Initialize a 9×9 grid of zeros (empty)
      const emptyGrid = Array.from({ length: 9 }, () => Array(9).fill(''))
      const [serverGrid, setServerGrid] = useState(null)
@@ -86,7 +86,7 @@ export default function SudokuGrid({ roomId, userName, difficulty }) {
     const [flash, setFlash] = useState(false)
 
 
-    const [showOthers, setShowOthers] = useState(true)
+    // const [showOthers, setShowOthers] = useState(true)
     const [mistakes, setMistakes] = useState(0)
     const [difficulty, setDifficulty] = useState('easy')
     const [noteMode, setNoteMode] = useState(false)
@@ -288,19 +288,33 @@ export default function SudokuGrid({ roomId, userName, difficulty }) {
     if (isNote) {
         // toggle note
         setNotes(prev => {
-          const next = prev.map(row => row.map(cell => [...cell]))
-          const notesInCell = next[row][col]
-          if (grid[row][col] !== '') return prev // ignore if main number exists
-    
-          const index = notesInCell.indexOf(val)
-          if (index > -1) {
-            notesInCell.splice(index, 1)
-          } else {
-            notesInCell.push(val)
-            notesInCell.sort()
-          }
-          return next
-        })
+            const next = prev.map(row => row.map(cell => [...cell]))
+          
+            // 1. Clear notes from the selected cell
+            next[row][col] = []
+          
+            // 2. Remove val from all other notes in the same row and column
+            for (let i = 0; i < 9; i++) {
+              // Same row
+              const rowNotes = next[row][i]
+              const rowIndex = rowNotes.indexOf(val)
+              if (rowIndex !== -1) {
+                rowNotes.splice(rowIndex, 1)
+              }
+          
+              // Same column (avoid double-deleting the target cell)
+              if (i !== row) {
+                const colNotes = next[i][col]
+                const colIndex = colNotes.indexOf(val)
+                if (colIndex !== -1) {
+                  colNotes.splice(colIndex, 1)
+                }
+              }
+            }
+          
+            return next
+          })
+          
       } else {
             if (serverGrid[row][col] !== '') return; // skip clues
             const correct = serverGrid[row][col];
@@ -533,10 +547,14 @@ export default function SudokuGrid({ roomId, userName, difficulty }) {
                                         ${selectedValue && val === selectedValue
                                             ? (selectedCell?.row === r && selectedCell?.col === c
                                                 ? 'text-blue-700 font-bold'
-                                                : 'text-blue-700 font-bold bg-gray-200')
+                                                : 'text-blue-700 font-bold underline bg-gray-200')
                                             : ''}
                                         
-                                        ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
+                                            ${selectedCell?.row === r && selectedCell?.col === c
+                                                ? 'bg-orange-200'
+                                                : selectedCell?.row === r || selectedCell?.col === c
+                                                ? 'bg-yellow-100'
+                                                : ''}
 
 
                                         /* Grid borders for 3x3 layout */
