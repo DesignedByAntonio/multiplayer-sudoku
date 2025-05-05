@@ -167,6 +167,7 @@ export default function App() {
         roomId={roomId}
         userName={userName}
         initialGrid={initialGrid}
+        difficulty={difficulty} 
       />
     </div>
   )

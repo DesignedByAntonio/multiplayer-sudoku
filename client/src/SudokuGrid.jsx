@@ -63,7 +63,7 @@ function isComplete(grid) {
 
   
 
-export default function SudokuGrid({ roomId, userName }) {
+export default function SudokuGrid({ roomId, userName, difficulty }) {
      // 1. Initialize a 9×9 grid of zeros (empty)
      const emptyGrid = Array.from({ length: 9 }, () => Array(9).fill(''))
      const [serverGrid, setServerGrid] = useState(null)
