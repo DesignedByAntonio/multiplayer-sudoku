@@ -8,6 +8,21 @@ export default function JoinScreen({ onJoin }) {
   const [roomId, setRoomId] = useState(roomIdFromUrl)
   const [userName, setUserName] = useState('')
   const [showOthers, setShowOthers] = useState(true)
+  const [devPuzzle, setDevPuzzle] = useState('')
+
+
+
+  async function validatePuzzle(puzzleString) {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/validate-puzzle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ puzzle: puzzleString }),
+    });
+    const result = await res.json();
+    alert(result.valid ? '✅ Puzzle is solvable' : '❌ Puzzle is invalid');
+  }
+  
+
 
 
   function handleSubmit(e) {
@@ -16,6 +31,22 @@ export default function JoinScreen({ onJoin }) {
         onJoin({ userName, roomId, showOthers })
     }
   }
+
+
+
+  async function validatePuzzle(puzzleString) {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/validate-puzzle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ puzzle: puzzleString }),
+    })
+    const data = await res.json()
+    alert(data.valid ? '✅ Puzzle is solvable' : '❌ Invalid or unsolvable puzzle')
+  }
+
+  
+
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -49,6 +80,30 @@ export default function JoinScreen({ onJoin }) {
             />
             Show other players’ answers
         </label>
+
+        <hr className="border-t my-2" />
+
+
+
+        
+        <h3 className="text-sm font-semibold text-gray-600">Dev Tools</h3>
+
+        <input
+        type="text"
+        placeholder="Paste puzzle string (81 chars)"
+        value={devPuzzle}
+        onChange={e => setDevPuzzle(e.target.value)}
+        className="w-full p-2 border rounded text-xs"
+        />
+
+        <button
+        type="button"
+        onClick={() => validatePuzzle(devPuzzle)}
+        className="w-full mt-2 text-xs bg-gray-200 p-2 rounded hover:bg-gray-300"
+        >
+        Validate Puzzle
+        </button>
+
 
 
         <button

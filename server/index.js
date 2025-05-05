@@ -40,6 +40,59 @@ app.get('/api/puzzle/:difficulty', (req, res) => {
   res.json(choice)
 })
 
+
+
+// Simple backtracking solver
+function solveSudoku(board) {
+  function isValid(r, c, val) {
+    for (let i = 0; i < 9; i++) {
+      if (board[r][i] === val || board[i][c] === val) return false;
+      const br = 3 * Math.floor(r / 3) + Math.floor(i / 3);
+      const bc = 3 * Math.floor(c / 3) + (i % 3);
+      if (board[br][bc] === val) return false;
+    }
+    return true;
+  }
+
+  function solve() {
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (board[r][c] === '0') {
+          for (let val = 1; val <= 9; val++) {
+            const strVal = val.toString();
+            if (isValid(r, c, strVal)) {
+              board[r][c] = strVal;
+              if (solve()) return true;
+              board[r][c] = '0';
+            }
+          }
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  return solve();
+}
+
+app.post('/api/validate-puzzle', express.json(), (req, res) => {
+  const { puzzle } = req.body;
+  if (!puzzle || puzzle.length !== 81) {
+    return res.status(400).json({ valid: false, error: 'Invalid puzzle format' });
+  }
+
+  const grid = Array.from({ length: 9 }, (_, r) =>
+    puzzle.slice(r * 9, r * 9 + 9).split('')
+  );
+
+  const isValid = solveSudoku(grid);
+  res.json({ valid: isValid });
+});
+
+
+
+
 // Record a finished game
 app.post(
   '/api/result',
@@ -128,7 +181,7 @@ io.on('connection', socket => {
 
   
 
-  
+
 
   socket.on('player-finished', ({ roomId, userName, time }) => {
     const player = roomData?.[roomId]?.players?.[userName]
