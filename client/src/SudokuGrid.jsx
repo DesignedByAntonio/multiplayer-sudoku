@@ -362,7 +362,7 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
   }
   
 
-
+//s
   function handleForfeit() {
     socket.emit('player-finished', {
       roomId,
@@ -544,17 +544,16 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
                                         text-center text-lg
                                         ${isClue ? 'bg-gray-100 text-gray-700' : 'bg-white text-black'}
                                         ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
-                                        ${selectedValue && val === selectedValue
-                                            ? (selectedCell?.row === r && selectedCell?.col === c
-                                                ? 'text-blue-700 font-bold'
-                                                : 'text-blue-700 font-bold underline bg-gray-200')
-                                            : ''}
-                                        
-                                            ${selectedCell?.row === r && selectedCell?.col === c
-                                                ? 'bg-orange-200'
-                                                : selectedCell?.row === r || selectedCell?.col === c
-                                                ? 'bg-yellow-100'
-                                                : ''}
+                                        ${
+                                            selectedCell?.row === r && selectedCell?.col === c
+                                              ? 'bg-orange-200 text-blue-700 font-bold underline'
+                                              : selectedValue && val === selectedValue
+                                              ? 'bg-gray-200 text-blue-700 font-bold underline'
+                                              : selectedCell?.row === r || selectedCell?.col === c
+                                              ? 'bg-yellow-100'
+                                              : ''
+                                          }
+                                          
 
 
                                         /* Grid borders for 3x3 layout */
