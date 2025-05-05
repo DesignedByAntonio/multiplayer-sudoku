@@ -99,7 +99,8 @@ io.on('connection', socket => {
     roomData[roomId].players[userName] = {
       start: Date.now(),
       end: null,
-      forfeit: false
+      forfeit: false,
+      progress: 0
     }
 
     // Send puzzle + players to new player
@@ -114,6 +115,20 @@ io.on('connection', socket => {
     socket.to(roomId).emit('player-joined', userName)
     io.to(roomId).emit('user-joined', userName)
   })
+
+
+  socket.on('progress-update', ({ roomId, userName, progress }) => {
+    if (!roomData[roomId]?.players[userName]) return
+    roomData[roomId].players[userName].progress = progress
+  
+    io.to(roomId).emit('progress-data', {
+      players: roomData[roomId].players
+    })
+  })
+
+  
+
+  
 
   socket.on('player-finished', ({ roomId, userName, time }) => {
     const player = roomData?.[roomId]?.players?.[userName]

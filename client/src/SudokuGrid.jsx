@@ -15,6 +15,22 @@ function isComplete(grid) {
     return nums.length === 9 && new Set(nums).size === 9;
   }
 
+  function computeProgress(grid, serverGrid) {
+    const totalCells = 81
+    let filled = 0
+  
+    for (let r = 0; r < 9; r++) {
+      for (let c = 0; c < 9; c++) {
+        if (serverGrid[r][c] === '' && grid[r][c] !== '') {
+          filled++
+        }
+      }
+    }
+  
+    return Math.floor((filled / totalCells) * 100)
+  }
+  
+
 
   
   
@@ -199,6 +215,18 @@ export default function SudokuGrid({ roomId, userName }) {
     }
   }, [roomId, userName])
 
+
+  useEffect(() => {
+    socket.on('progress-data', ({ players }) => {
+      setPlayers(players)
+    })
+    return () => socket.off('progress-data')
+  }, [])
+  
+
+
+
+
   useEffect(() => {
     socket.on('room-data', ({ puzzle, players, showOthers, difficulty  }) => {
         setShowOthers(showOthers)
@@ -294,7 +322,10 @@ export default function SudokuGrid({ roomId, userName }) {
                 next[row][col] = [] // clear notes on main input
                 return next
               })
-        
+            
+            
+              const progress = computeProgress(grid, serverGrid)
+            socket.emit('progress-update', { roomId, userName, progress })
             socket.emit('cell-update', {
             roomId,
             row,
@@ -428,122 +459,137 @@ export default function SudokuGrid({ roomId, userName }) {
 
 
 
-<div className="relative">
-    {/* Blur layer */}
-    {(!timerRunning && !winner && !finalResults) && (
-        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
-        <div className="text-xl font-semibold text-gray-700">⏸ Game is paused</div>
-        </div>
-    )}
+            <div className="relative">
+                {/* Blur layer */}
+                {(!timerRunning && !winner && !finalResults) && (
+                    <div className="absolute inset-0 bg-white/60 backdrop-blur-sm z-10 flex items-center justify-center">
+                    <div className="text-xl font-semibold text-gray-700">⏸ Game is paused</div>
+                    </div>
+                )}
 
-        <div className={`grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0 transition ${flash ? 'flash-red' : ''}`}>
-
-            {grid.map((row, r) =>
-                row.map((val, c) => {
-                // compute isClue inside a block arrow function
-                const isClue = serverGrid && serverGrid[r][c] !== ''
-                const disabled = isClue || Boolean(winner)
-
-                const borderTop = r === 0
-                ? 'border-t-4 border-gray-700'
-                : r % 3 === 0
-                    ? 'border-t-2 border-gray-700'
-                    : 'border-t border-gray-300'
-
-                const borderBottom = r === 8
-                ? 'border-b-4 border-gray-700'
-                : r % 3 === 2
-                    ? 'border-b-2 border-gray-700'
-                    : 'border-b border-gray-300'
-
-                const borderLeft = c === 0
-                ? 'border-l-4 border-gray-700'
-                : c % 3 === 0
-                    ? 'border-l-2 border-gray-700'
-                    : 'border-l border-gray-300'
-
-                const borderRight = c === 8
-                ? 'border-r-4 border-gray-700'
-                : c % 3 === 2
-                    ? 'border-r-2 border-gray-700'
-                    : 'border-r border-gray-300'
-
-                const selectedValue =
-                selectedCell && grid[selectedCell.row][selectedCell.col] !== ''
-                ? grid[selectedCell.row][selectedCell.col]
-                : null;
-                  
-
-                return (
-                    
-                    <div
-                        key={`${r}-${c}`}
-                        onClick={() => setSelectedCell({ row: r, col: c })}
-                        className={`
-                            w-10 h-10 relative flex items-center justify-center
-                            text-center text-lg
-                            ${isClue ? 'bg-gray-100 text-gray-700' : 'bg-white text-black'}
-                            ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
-                            ${selectedValue && val === selectedValue
-                                ? (selectedCell?.row === r && selectedCell?.col === c
-                                    ? 'text-blue-700 font-bold'
-                                    : 'text-blue-700 font-bold bg-gray-200')
-                                : ''}
-                              
-                            ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
+                    <div className="mb-4 grid grid-cols-2 sm:grid-cols-3 gap-4 text-sm">
+                    {Object.entries(players).map(([name, data]) => (
+                        <div key={name} className="text-center">
+                        <div className="font-medium">{name}</div>
+                        <div className="bg-gray-300 rounded-full h-2 w-full mt-1">
+                            <div
+                            className="bg-blue-500 h-2 rounded-full transition-all"
+                            style={{ width: `${data.progress || 0}%` }}
+                            />
+                        </div>
+                        </div>
+                    ))}
+                    </div>
 
 
-                            /* Grid borders for 3x3 layout */
-                            ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
-                            ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
-                            ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
-                            ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
-                            ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
-                        `}
-                        >
-                        {grid[r][c] !== '' ? (
-                            <span>{grid[r][c]}</span>
-                        ) : (
-                            <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 text-[10px] text-gray-500 pointer-events-none px-0.5 py-0.5">
-                            {Array.from({ length: 9 }, (_, i) => (
-                                <div key={i} className="flex items-center justify-center">
-                                {notes[r][c].includes((i + 1).toString()) ? i + 1 : ''}
-                                </div>
-                            ))}
+                    <div className={`grid grid-cols-9 bg-gray-700 p-1 rounded-lg gap-0 transition ${flash ? 'flash-red' : ''}`}>
+
+                        {grid.map((row, r) =>
+                            row.map((val, c) => {
+                            // compute isClue inside a block arrow function
+                            const isClue = serverGrid && serverGrid[r][c] !== ''
+                            const disabled = isClue || Boolean(winner)
+
+                            const borderTop = r === 0
+                            ? 'border-t-4 border-gray-700'
+                            : r % 3 === 0
+                                ? 'border-t-2 border-gray-700'
+                                : 'border-t border-gray-300'
+
+                            const borderBottom = r === 8
+                            ? 'border-b-4 border-gray-700'
+                            : r % 3 === 2
+                                ? 'border-b-2 border-gray-700'
+                                : 'border-b border-gray-300'
+
+                            const borderLeft = c === 0
+                            ? 'border-l-4 border-gray-700'
+                            : c % 3 === 0
+                                ? 'border-l-2 border-gray-700'
+                                : 'border-l border-gray-300'
+
+                            const borderRight = c === 8
+                            ? 'border-r-4 border-gray-700'
+                            : c % 3 === 2
+                                ? 'border-r-2 border-gray-700'
+                                : 'border-r border-gray-300'
+
+                            const selectedValue =
+                            selectedCell && grid[selectedCell.row][selectedCell.col] !== ''
+                            ? grid[selectedCell.row][selectedCell.col]
+                            : null;
+                            
+
+                            return (
+                                
+                                <div
+                                    key={`${r}-${c}`}
+                                    onClick={() => setSelectedCell({ row: r, col: c })}
+                                    className={`
+                                        w-10 h-10 relative flex items-center justify-center
+                                        text-center text-lg
+                                        ${isClue ? 'bg-gray-100 text-gray-700' : 'bg-white text-black'}
+                                        ${disabled && !isClue ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:bg-blue-100'}
+                                        ${selectedValue && val === selectedValue
+                                            ? (selectedCell?.row === r && selectedCell?.col === c
+                                                ? 'text-blue-700 font-bold'
+                                                : 'text-blue-700 font-bold bg-gray-200')
+                                            : ''}
+                                        
+                                        ${selectedCell?.row === r || selectedCell?.col === c ? 'bg-yellow-100' : ''}
+
+
+                                        /* Grid borders for 3x3 layout */
+                                        ${r === 0 ? 'border-t-4 border-gray-700' : r % 3 === 0 ? 'border-t-2 border-gray-700' : 'border-t border-gray-300'}
+                                        ${r === 8 ? 'border-b-4 border-gray-700' : r % 3 === 2 ? 'border-b-2 border-gray-700' : 'border-b border-gray-300'}
+                                        ${c === 0 ? 'border-l-4 border-gray-700' : c % 3 === 0 ? 'border-l-2 border-gray-700' : 'border-l border-gray-300'}
+                                        ${c === 8 ? 'border-r-4 border-gray-700' : c % 3 === 2 ? 'border-r-2 border-gray-700' : 'border-r border-gray-300'}
+                                        ${(r % 3 === 1 && c % 3 === 1) ? 'border border-gray-600' : ''}
+                                    `}
+                                    >
+                                    {grid[r][c] !== '' ? (
+                                        <span>{grid[r][c]}</span>
+                                    ) : (
+                                        <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 text-[10px] text-gray-500 pointer-events-none px-0.5 py-0.5">
+                                        {Array.from({ length: 9 }, (_, i) => (
+                                            <div key={i} className="flex items-center justify-center">
+                                            {notes[r][c].includes((i + 1).toString()) ? i + 1 : ''}
+                                            </div>
+                                        ))}
+                                        </div>
+                                    )}
                             </div>
+                            )
+                            
+                            })
                         )}
-                </div>
-                )
-                
-                })
-            )}
+                        </div>
+
             </div>
 
-        </div>
-
-        <div className="mt-6 grid grid-cols-5 gap-2">
-            {[1, 2, 3, 4, 5].map(n => (
-                <button
-                key={n}
-                onClick={() => handleNumberClick(String(n))}
-                className="bg-white border rounded text-lg w-10 h-10 hover:bg-blue-100"
-                >
-                {n}
-                </button>
-            ))}
-            {[6, 7, 8, 9, '⌫'].map(n => (
-                <button
-                key={n}
-                onClick={() =>
-                    n === '⌫'
-                    ? handleNumberClick('')
-                    : handleNumberClick(String(n))
-                }
-                className="bg-white border rounded text-lg w-10 h-10 hover:bg-blue-100"
-                >
-                {n}
-                </button>
-            ))}
+            <div className="mt-6 grid grid-cols-5 gap-2">
+                {[1, 2, 3, 4, 5].map(n => (
+                    <button
+                    key={n}
+                    onClick={() => handleNumberClick(String(n))}
+                    className="bg-white border rounded text-lg w-10 h-10 hover:bg-blue-100"
+                    >
+                    {n}
+                    </button>
+                ))}
+                {[6, 7, 8, 9, '⌫'].map(n => (
+                    <button
+                    key={n}
+                    onClick={() =>
+                        n === '⌫'
+                        ? handleNumberClick('')
+                        : handleNumberClick(String(n))
+                    }
+                    className="bg-white border rounded text-lg w-10 h-10 hover:bg-blue-100"
+                    >
+                    {n}
+                    </button>
+                ))}
             </div>
 
             <button
