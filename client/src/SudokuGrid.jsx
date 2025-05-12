@@ -283,7 +283,9 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
     const { row, col } = selectedCell;
   
     // Prevent changing a clue cell
-    if (serverGrid && serverGrid[row][col] !== '') return;
+    if (!serverGrid) return; // board not ready yet
+    if (serverGrid[row][col] !== '') return; // skip clues
+
 
 
     const isNote = noteMode
@@ -351,7 +353,10 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
             value: val
             });
             console.log('Click registered:', num, 'Cell:', selectedCell)
+            console.log('Clicked cell:', row, col, 'Current value:', grid[row][col], 'Clue:', serverGrid?.[row]?.[col])
+
     }
+    
   } 
 
   
