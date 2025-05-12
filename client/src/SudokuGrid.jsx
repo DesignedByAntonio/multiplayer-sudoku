@@ -85,6 +85,7 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
     const [timerId, setTimerId] = useState(null)
     const [flash, setFlash] = useState(false)
     const [hasSubmittedWin, setHasSubmittedWin] = useState(false)
+    const [clues, setClues] = useState(null)
 
 
 
@@ -232,7 +233,11 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
 
 
   useEffect(() => {
+    const [clues, setClues] = useState(null)  // NEW
+
+
     socket.on('room-data', ({ puzzle, players, showOthers, difficulty  }) => {
+
         setShowOthers(showOthers)
         setDifficulty(difficulty || 'easy')
         const flat = puzzle.split('').map(c => (c === '0' ? '' : c))
@@ -241,6 +246,7 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
         )
         setServerGrid(twoD)
         setPlayers(players)
+        setClues(twoD.map(row => row.map(c => (c !== '' ? true : false))))
       })
       
     
@@ -284,7 +290,7 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
   
     // Prevent changing a clue cell
     if (!serverGrid) return; // board not ready yet
-    if (serverGrid[row][col] !== '') return; // skip clues
+    if (clues?.[row]?.[col]) return  // skip clues
 
 
 
@@ -322,7 +328,7 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
           })
           
       } else {
-            if (serverGrid[row][col] !== '') return; // skip clues
+        if (clues?.[row]?.[col]) return // skip clues
             const correct = serverGrid[row][col];
             if (correct && correct !== val && grid[row][col] === '') {
                 setMistakes(prev => prev + 1);
