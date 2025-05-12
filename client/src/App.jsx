@@ -41,16 +41,16 @@ export default function App() {
     setJoined(true)
   }
 
+
   async function loadLeaderboard() {
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leaderboard?roomId=${roomId}`)
-      const data = await res.json()
-      setScores(data)
-      setShowLb(true)
-    } catch (err) {
-      console.error('Failed to load leaderboard', err)
-    }
+    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leaderboard?roomId=${roomId}`)
+    const data = await resp.json()
+    setScores(data)
+    setShowLb(true)
   }
+  
+
+  
   
   
 
@@ -104,6 +104,35 @@ export default function App() {
       </div>
     )
   }
+
+
+  function DebugValidateButton() {
+    const [result, setResult] = useState(null)
+  
+    async function handleValidate() {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/validate-puzzles`)
+      const data = await res.json()
+      setResult(data)
+    }
+  
+    return (
+      <div className="mt-4">
+        <button
+          onClick={handleValidate}
+          className="px-3 py-2 bg-yellow-400 rounded hover:bg-yellow-500 text-black font-medium"
+        >
+          🛠 Validate Puzzles
+        </button>
+  
+        {result && (
+          <pre className="mt-2 text-sm bg-gray-100 p-2 rounded max-h-60 overflow-y-scroll">
+            {JSON.stringify(result, null, 2)}
+          </pre>
+        )}
+      </div>
+    )
+  }
+  
 
   // <-- This is where you render the grid once joined:
   return (

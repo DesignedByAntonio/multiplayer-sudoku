@@ -84,11 +84,13 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
     const [timerRunning, setTimerRunning] = useState(true)
     const [timerId, setTimerId] = useState(null)
     const [flash, setFlash] = useState(false)
+    const [hasSubmittedWin, setHasSubmittedWin] = useState(false)
+
 
 
     // const [showOthers, setShowOthers] = useState(true)
     const [mistakes, setMistakes] = useState(0)
-    const [difficulty, setDifficulty] = useState('easy')
+    // const [difficulty, setDifficulty] = useState('easy')
     const [noteMode, setNoteMode] = useState(false)
     const [notes, setNotes] = useState(
         Array.from({ length: 9 }, () => Array.from({ length: 9 }, () => []))
@@ -146,36 +148,38 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
 
   // win detection: when local player solves, emit to server AND record result
   useEffect(() => {
-    if (isComplete(grid) && isValidSudoku(grid)) {
-        const endTime = Date.now()
-        socket.emit('player-finished', {
-          roomId,
-          userName,
-          time: endTime
-        })
-      // compute elapsed time in seconds
-      const elapsedMs = startTime ? Date.now() - startTime : 0
-      const elapsedSec = Math.floor(elapsedMs / 1000)
-
-
-      clearInterval(timerId)
-    setTimerRunning(false)  
-
-
-      // send to leaderboard API
-      fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          roomId,
-          userName,
-          time: elapsedSec,
-          mistakes,                 
-          date: new Date().toISOString()
-        })
+    if (!isComplete(grid) || !isValidSudoku(grid) || hasSubmittedWin) return;
+  
+    setHasSubmittedWin(true) // ✅ prevent future triggers
+  
+    const endTime = Date.now()
+  
+    socket.emit('game-won', { roomId, userName })
+    socket.emit('player-finished', {
+      roomId,
+      userName,
+      time: endTime
+    })
+  
+    const elapsedMs = startTime ? Date.now() - startTime : 0
+    const elapsedSec = Math.floor(elapsedMs / 1000)
+  
+    clearInterval(timerId)
+    setTimerRunning(false)
+  
+    fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/easy`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        roomId,
+        userName,
+        time: elapsedSec,
+        mistakes,
+        date: new Date().toISOString()
       })
-    }
-  }, [grid])
+    })
+  }, [grid, hasSubmittedWin])
+  
 
 
 
@@ -361,7 +365,7 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
     return `${m}:${s}`
   }
   
-
+  
 //s
   function handleForfeit() {
     socket.emit('player-finished', {
@@ -448,26 +452,26 @@ export default function SudokuGrid({ roomId, userName, difficulty, showOthers  }
 
 
 
-<div className="flex items-center gap-4 text-xl font-mono text-gray-800 mt-4">
-  ⏱️ Time: {formatTime(elapsed)}
-  <span className="text-red-600">❌ Mistakes: {mistakes}</span>
-  <button
-    onClick={() => {
-      if (timerRunning) {
-        clearInterval(timerId)
-      } else {
-        const id = setInterval(() => {
-          setElapsed(prev => prev + 1)
-        }, 1000)
-        setTimerId(id)
-      }
-      setTimerRunning(!timerRunning)
-    }}
-    className="text-sm px-2 py-1 bg-white border rounded hover:bg-blue-100"
-  >
-    {timerRunning ? 'Pause' : 'Resume'}
-  </button>
-</div>
+        <div className="flex items-center gap-4 text-xl font-mono text-gray-800 mt-4">
+        ⏱️ Time: {formatTime(elapsed)}
+        <span className="text-red-600">❌ Mistakes: {mistakes}</span>
+        <button
+            onClick={() => {
+            if (timerRunning) {
+                clearInterval(timerId)
+            } else {
+                const id = setInterval(() => {
+                setElapsed(prev => prev + 1)
+                }, 1000)
+                setTimerId(id)
+            }
+            setTimerRunning(!timerRunning)
+            }}
+            className="text-sm px-2 py-1 bg-white border rounded hover:bg-blue-100"
+        >
+            {timerRunning ? 'Pause' : 'Resume'}
+        </button>
+        </div>
 
 
 

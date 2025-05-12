@@ -42,6 +42,14 @@ app.get('/api/puzzle/:difficulty', (req, res) => {
 
 
 
+// Basic uniqueness checker (replace with actual Sudoku validator logic)
+function isValidPuzzle(puzzleStr) {
+  return typeof puzzleStr === 'string' && puzzleStr.length === 81
+}
+
+
+
+
 // Simple backtracking solver
 function solveSudoku(board) {
   function isValid(r, c, val) {
