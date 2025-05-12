@@ -12,7 +12,7 @@ export default function App() {
  
 
   const [joined, setJoined] = useState(false)
-  const [initialGrid, setInitialGrid] = useState(null)
+  // const [initialGrid, setInitialGrid] = useState(null)
   const [showLb, setShowLb]   = useState(false)
   const [scores, setScores]   = useState([])
   const [showOthers, setShowOthers] = useState(true)
@@ -25,28 +25,33 @@ export default function App() {
   async function joinRoom() {
     if (!userName || !roomId) return
   
-    // 1. Fetch a puzzle (hardcode 'easy' for now)
-    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/${difficulty}`)
-    const { grid } = await resp.json()
+    // // 1. Fetch a puzzle (hardcode 'easy' for now)
+    // const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/puzzle/${difficulty}`)
+    // const { grid } = await resp.json()
   
-    // 2. Convert the 81-char string into a 9×9 array of '' or '1'–'9'
-    const flat = grid.split('').map(c => (c === '0' ? '' : c))
-    const twoD = Array.from({ length: 9 }, (_, r) =>
-      flat.slice(r * 9, r * 9 + 9)
-    )
+    // // 2. Convert the 81-char string into a 9×9 array of '' or '1'–'9'
+    // const flat = grid.split('').map(c => (c === '0' ? '' : c))
+    // const twoD = Array.from({ length: 9 }, (_, r) =>
+    //   flat.slice(r * 9, r * 9 + 9)
+    // )
   
-    setInitialGrid(twoD)
+    // setInitialGrid(twoD)
   
-    // 3. Now we can show the grid
+    // // 3. Now we can show the grid
     setJoined(true)
   }
 
 
   async function loadLeaderboard() {
-    const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leaderboard?roomId=${roomId}`)
-    const data = await resp.json()
-    setScores(data)
-    setShowLb(true)
+    try {
+      const resp = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/leaderboard?roomId=${roomId}`)
+      const data = await resp.json()
+      setScores(data)
+      setShowLb(true)
+    } catch (err) {
+      console.error('Error loading leaderboard:', err)
+      alert('Failed to load leaderboard.')
+    }
   }
   
 
@@ -195,7 +200,7 @@ export default function App() {
       <SudokuGrid
         roomId={roomId}
         userName={userName}
-        initialGrid={initialGrid}
+        // initialGrid={initialGrid}
         difficulty={difficulty} 
         showOthers={showOthers} 
       />
